@@ -8,9 +8,48 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".PanelActivity" >
 
-    <TextView
+    <FrameLayout
+        android:id="@+id/videoview"
+        android:layout_width="352px"
+        android:layout_height="288px"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true" />
+
+    <Button
+        android:id="@+id/btnLogout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/hello_world" />
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@+id/videoview"
+        android:onClick="btnLogoutClicked"
+        android:text="Logout" />
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/txtMovement"
+        android:layout_alignLeft="@+id/txtMovement"
+        android:text="You are connected to server."
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <TextView
+        android:id="@+id/txtMovement"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/btnLogout"
+        android:layout_marginTop="38dp"
+        android:layout_toRightOf="@+id/videoview"
+        android:text="Here comes server data"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/txtMovement"
+        android:layout_toRightOf="@+id/videoview"
+        android:text="Movement:"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
 </RelativeLayout>
