@@ -52,4 +52,13 @@
         android:text="Movement:"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
+    <Button
+        android:id="@+id/button1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/btnLogout"
+        android:layout_below="@+id/btnLogout"
+        android:text="Send Msg"
+        android:onClick="stupidButtonClicked" />
+
 </RelativeLayout>

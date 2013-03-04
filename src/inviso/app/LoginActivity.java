@@ -4,6 +4,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
+import android.hardware.Camera;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -23,7 +24,7 @@ public class LoginActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
-
+		
 		txtServer = (EditText) findViewById(R.id.txtServer);
 		txtUser = (EditText) findViewById(R.id.txtUser);
 		txtPass = (EditText) findViewById(R.id.txtPass);
@@ -32,28 +33,32 @@ public class LoginActivity extends Activity {
 		btnLogin.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				new LoginTask().execute(new String[]{txtServer.getText().toString(), txtUser.getText().toString(), txtPass.getText().toString()});				
+				new LoginTask().execute(new String[] { txtServer.getText().toString(), txtUser.getText().toString(), txtPass.getText().toString() });
 			}
 		});
 	}
 
-
 	private class LoginTask extends AsyncTask<String, Void, Boolean> {
-		String[] params = null; 
+		String[] params = null;
+
 		@Override
 		protected Boolean doInBackground(String... params) {
 			this.params = params;
 			boolean loginResult = NetworkHandler.login(params[0], params[1], params[2]);
 			return loginResult;
-		}		
+		}
 
 		@Override
 		protected void onPostExecute(Boolean result) {
-			Intent i = new Intent(getApplicationContext(), PanelActivity.class);
-			i.putExtra("server", params[0]);
-			i.putExtra("user", params[1]);
-			i.putExtra("pass", params[2]);			
-			startActivity(i);
+			if (result) {
+				Intent i = new Intent(getApplicationContext(), PanelActivity.class);
+				i.putExtra("server", params[0]);
+				i.putExtra("user", params[1]);
+				i.putExtra("pass", params[2]);
+				startActivity(i);
+			} else {
+				Toast.makeText(getApplicationContext(), "YOU SHALL NOT PASS!", Toast.LENGTH_SHORT).show();
+			}
 		}
 	}
 }
