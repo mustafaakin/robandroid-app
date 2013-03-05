@@ -20,6 +20,7 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 public class PanelActivity extends Activity {
 	ConnectionChannel data;
@@ -30,36 +31,45 @@ public class PanelActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_panel);
 
+		final TextView txtServer = (TextView)findViewById(R.id.txtServer); 
+		
 		SurfaceView camView = new SurfaceView(this);
 		SurfaceHolder camHolder = camView.getHolder();
 		int width = 640;
 		int height = 480;
 
 		final CameraPreview camPreview = new CameraPreview(width, height);
-		camHolder.addCallback(camPreview);		
+		camHolder.addCallback(camPreview);
 
 		FrameLayout mainLayout = (FrameLayout) findViewById(R.id.videoview);
 		mainLayout.addView(camView, new LayoutParams(width, height));
-		
+
 		Intent intent = getIntent();
 		final String server = intent.getStringExtra("server");
 		final String user = intent.getStringExtra("user");
 		final String pass = intent.getStringExtra("pass");
-		
-		new Thread(
-		new Runnable() {			
+
+		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				// data = new ConnectionChannel(server, ConnectionChannel.DATA_PORT, user, pass);	
+				data = new ConnectionChannel(server, ConnectionChannel.DATA_PORT, user, pass);
 				video = new ConnectionChannel(server, ConnectionChannel.VIDEO_PORT, user, pass);
 				camPreview.setChannel(video);
+
+				data.setCallback(new MessageCallback() {
+					@Override
+					public void callback(final char message, final char value) {
+						runOnUiThread(new Thread(){
+							@Override
+							public void run() {
+								txtServer.setText("MESSAGE: " + (int)message +  " VALUE: " + (int)value);
+							}
+						});
+					}
+				});
 			}
 		}).start();
 
-		
-
-
-		 
 	}
 
 	public void stupidButtonClicked(View w) {

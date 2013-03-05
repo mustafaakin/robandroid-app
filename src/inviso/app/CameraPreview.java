@@ -47,21 +47,19 @@ public class CameraPreview implements SurfaceHolder.Callback, Camera.PreviewCall
 	
 	@Override
 	public void onPreviewFrame(byte[] data, Camera camera) {
-		if ( (System.currentTimeMillis() - previous) > 1000/30 &&  channel != null){
+		if ( (System.currentTimeMillis() - previous) > 1000/25 &&  channel != null){
 			previous = System.currentTimeMillis();
 
 			int width  = 640;
 			int height = 480;
-			
+					
 			long t1 = System.currentTimeMillis();
 			
 			ByteArrayOutputStream outstr = new ByteArrayOutputStream();
 			Rect rect = new Rect(0, 0, width, height);
 			Log.d("DATA SIZE:", data.length +"");
 			
-			YuvImage yuvimage = new YuvImage(data, ImageFormat.NV21, width, height, null);
-			
-			
+			YuvImage yuvimage = new YuvImage(data, ImageFormat.NV21, width, height, null);			
 			long t2 = System.currentTimeMillis();
 
 			yuvimage.compressToJpeg(rect, 50, outstr);
@@ -107,7 +105,7 @@ public class CameraPreview implements SurfaceHolder.Callback, Camera.PreviewCall
 	        v = data[offset+k+1]&0xff;
 	        u = u-128;
 	        v = v-128;
-
+	        	        
 	        pixels[i  ] = convertYUVtoRGB(y1, u, v);
 	        pixels[i+1] = convertYUVtoRGB(y2, u, v);
 	        pixels[width+i  ] = convertYUVtoRGB(y3, u, v);

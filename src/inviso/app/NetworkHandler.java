@@ -1,26 +1,14 @@
 package inviso.app;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.URI;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import android.util.Log;
-
-import com.codebutler.android_websockets.SocketIOClient;
 
 public class NetworkHandler {
 	private final static int WEB_PORT = 3000;
@@ -38,7 +26,7 @@ public class NetworkHandler {
 		}
 		return false;
 	}
-
+	
 	static class ConnectionChannel {
 		public static final int VIDEO_PORT = 5000;
 		public static final int DATA_PORT = 6000;
@@ -58,13 +46,30 @@ public class NetworkHandler {
 			}
 		}
 		
+		class RecieveThread implements Runnable {
+			MessageCallback cb;
+			public RecieveThread(MessageCallback cb){
+				this.cb = cb;
+			}
+			@Override
+			public void run() {
+				while(true){
+					char[] buf = new char[2];
+					try {
+						in.read(buf,0, 2);						
+						cb.callback(buf[0], buf[1]);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}					
+				}
+			}
+		}
+		
 		class SendThread implements Runnable {
 			volatile String msg;
 
 			@Override
-			public void run() {
-
-				
+			public void run() {				
 				while(true){
 					if ( msg != null){
 						out.write(msg);
@@ -75,7 +80,9 @@ public class NetworkHandler {
 				}
 			}
 		}
+		
 		SendThread sender;
+		RecieveThread reciever;
 		
 		public synchronized void send(String msg){
 			if ( sender == null){
@@ -85,14 +92,11 @@ public class NetworkHandler {
 			sender.msg = msg;
 		}
 		
-		public synchronized char[] recieveChars(int count){
-			char[] data = new char[count];
-			try {
-				in.read(data, 0, count);
-			} catch (IOException e) {
-				return null;
+		public synchronized void setCallback(MessageCallback callback){
+			if ( reciever == null){
+				reciever = new RecieveThread(callback);
+				new Thread(reciever).start();
 			}
-			return data;
 		}	
 	}
 }
