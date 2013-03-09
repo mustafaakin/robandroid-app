@@ -1,6 +1,9 @@
 package inviso.app;
 
+import inviso.app.MyLooper.Direction;
 import inviso.app.NetworkHandler.ConnectionChannel;
+import ioio.lib.util.IOIOLooper;
+import ioio.lib.util.android.IOIOActivity;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -22,10 +25,18 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
-public class PanelActivity extends Activity {
+public class PanelActivity extends IOIOActivity {
 	ConnectionChannel data;
 	ConnectionChannel video;
+	
+	MyLooper looper;
 
+	@Override
+	protected IOIOLooper createIOIOLooper() {
+		looper = new MyLooper();
+		return looper;
+	}
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -33,6 +44,7 @@ public class PanelActivity extends Activity {
 
 		final TextView txtServer = (TextView)findViewById(R.id.txtServer); 
 		
+		/*
 		SurfaceView camView = new SurfaceView(this);
 		SurfaceHolder camHolder = camView.getHolder();
 		int width = 640;
@@ -43,7 +55,7 @@ public class PanelActivity extends Activity {
 
 		FrameLayout mainLayout = (FrameLayout) findViewById(R.id.videoview);
 		mainLayout.addView(camView, new LayoutParams(width, height));
-
+        */
 		Intent intent = getIntent();
 		final String server = intent.getStringExtra("server");
 		final String user = intent.getStringExtra("user");
@@ -54,11 +66,18 @@ public class PanelActivity extends Activity {
 			public void run() {
 				data = new ConnectionChannel(server, ConnectionChannel.DATA_PORT, user, pass);
 				video = new ConnectionChannel(server, ConnectionChannel.VIDEO_PORT, user, pass);
-				camPreview.setChannel(video);
+				// camPreview.setChannel(video);
 
 				data.setCallback(new MessageCallback() {
 					@Override
 					public void callback(final char message, final char value) {
+						if ( looper != null){
+							if ( message == 101) looper.updateCommand(Direction.FORWARD);
+							if ( message == 102) looper.updateCommand(Direction.REVERSE);
+							if ( message == 103) looper.updateCommand(Direction.LEFT);
+							if ( message == 104) looper.updateCommand(Direction.RIGHT);								
+							if ( message == 105) looper.updateCommand(Direction.STOP);
+						}
 						runOnUiThread(new Thread(){
 							@Override
 							public void run() {

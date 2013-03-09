@@ -56,7 +56,7 @@ public class NetworkHandler {
 				while(true){
 					char[] buf = new char[2];
 					try {
-						in.read(buf,0, 2);						
+						in.read(buf,0, 2);
 						cb.callback(buf[0], buf[1]);
 					} catch (IOException e) {
 						e.printStackTrace();
