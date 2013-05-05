@@ -1,5 +1,6 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:opencv="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingBottom="@dimen/activity_vertical_margin"
@@ -8,50 +9,41 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".PanelActivity" >
 
-    <FrameLayout
-        android:id="@+id/videoview"
+    <org.opencv.android.NativeCameraView
+        android:id="@+id/cameraView"
         android:layout_width="640px"
         android:layout_height="480px"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true" />
+        android:visibility="visible"
+        opencv:camera_id="any"
+        opencv:show_fps="false" />
 
     <Button
         android:id="@+id/btnLogout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/button1"
-        android:layout_alignParentRight="true"
-        android:layout_alignTop="@+id/videoview"
+        android:layout_alignRight="@+id/cameraView"
+        android:layout_below="@+id/cameraView"
         android:onClick="btnLogoutClicked"
         android:text="Logout" />
+
+    <TextView
+        android:id="@+id/informationText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/btnLogout"
+        android:layout_alignBottom="@+id/btnLogout"
+        android:layout_alignLeft="@+id/cameraView"
+        android:layout_toLeftOf="@+id/btnLogout"
+        android:text="TextView" />
 
     <Button
         android:id="@+id/button1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/textView1"
-        android:layout_below="@+id/btnLogout"
-        android:onClick="stupidButtonClicked"
-        android:text="Send Msg" />
-
-    <TextView
-        android:id="@+id/textView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/button1"
-        android:layout_marginTop="29dp"
-        android:layout_toRightOf="@+id/videoview"
-        android:text="You are connected to server."
-        android:textAppearance="?android:attr/textAppearanceSmall" />
-
-    <TextView
-        android:id="@+id/txtServer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/textView1"
-        android:layout_marginTop="73dp"
-        android:layout_toRightOf="@+id/videoview"
-        android:text="Here comes server data"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
+        android:layout_alignBaseline="@+id/btnLogout"
+        android:layout_alignBottom="@+id/btnLogout"
+        android:layout_toLeftOf="@+id/btnLogout"
+        android:text="Send TestMsg"
+        android:onClick="sendTestMsg" />
 
 </RelativeLayout>

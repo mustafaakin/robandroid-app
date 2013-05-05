@@ -1,42 +1,81 @@
 package inviso.app;
 
-import inviso.app.MyLooper.Direction;
-import inviso.app.NetworkHandler.ConnectionChannel;
+import java.util.Date;
+
+import inviso.app.network.Command;
+import inviso.app.network.CommandCallback;
+import inviso.app.network.DataCommunicator;
+import inviso.app.network.VideoCommunicator;
 import ioio.lib.util.IOIOLooper;
 import ioio.lib.util.android.IOIOActivity;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import org.opencv.android.BaseLoaderCallback;
+import org.opencv.android.CameraBridgeViewBase;
+import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
+import org.opencv.android.LoaderCallbackInterface;
+import org.opencv.android.OpenCVLoader;
+import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
+import org.opencv.core.Mat;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Message;
-import android.app.Activity;
 import android.content.Intent;
-import android.hardware.Camera;
 import android.util.Log;
-import android.view.Menu;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
-import android.view.ViewGroup.LayoutParams;
-import android.widget.FrameLayout;
 import android.widget.TextView;
 
-public class PanelActivity extends IOIOActivity {
-	ConnectionChannel data;
-	ConnectionChannel video;
+public class PanelActivity extends IOIOActivity implements CommandCallback {
+	private MyIOIOLooper looper;
+	
+	private boolean isCameraTransmitting = false;
+	private boolean isAutonomous = false;
+	
+	private VideoCommunicator commVideo;
+	private DataCommunicator commData;
+	
+	private Matrix matrix;
+	
+	private CameraBridgeViewBase mOpenCvCameraView;
 
-	MyLooper looper;
-	CameraPreview camPreview;
+	private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
+		@Override
+		public void onManagerConnected(int status) {
+			if (status == LoaderCallbackInterface.SUCCESS) {
+				mOpenCvCameraView.enableView();
+				Intent intent = getIntent();
+				final String host = intent.getStringExtra("server");
+				final String user = intent.getStringExtra("user");
+				final String pass = intent.getStringExtra("pass");
+				
+				// Setup the Tasks
+				commVideo = new VideoCommunicator(host, user, pass, 5000);
+				
+				commVideo.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+				
+			} else {
+				super.onManagerConnected(status);
+			}
+		}
+	};
 
 	@Override
 	protected IOIOLooper createIOIOLooper() {
-		looper = new MyLooper();
+		looper = new MyIOIOLooper();
+		if ( matrix != null){
+			matrix.cancel(true);
+		}
+		if ( isAutonomous){
+			matrix = new Matrix(looper);
+		}
+		// TODO: Also notify the Data Transmission tasks.
 		return looper;
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this, mLoaderCallback);
 	}
 
 	@Override
@@ -44,77 +83,57 @@ public class PanelActivity extends IOIOActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_panel);
 
-		final TextView txtServer = (TextView) findViewById(R.id.txtServer);
-
-		SurfaceView camView = new SurfaceView(this);
-		final SurfaceHolder camHolder = camView.getHolder();
-		final int width = 640;
-		final int height = 480;
-
-		camPreview = new CameraPreview(width, height);
-		camHolder.addCallback(camPreview);
-
-		FrameLayout mainLayout = (FrameLayout) findViewById(R.id.videoview);
-		mainLayout.addView(camView, new LayoutParams(width, height));
-
 		Intent intent = getIntent();
-		final String server = intent.getStringExtra("server");
+		final String host = intent.getStringExtra("server");
 		final String user = intent.getStringExtra("user");
 		final String pass = intent.getStringExtra("pass");
 
-		new Thread(new Runnable() {
+		commData = new DataCommunicator(host, user, pass, 6000, this);
+		commData.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+		mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.cameraView);
+		mOpenCvCameraView.setCvCameraViewListener(new CvCameraViewListener2() {
 			@Override
-			public void run() {
-				data = new ConnectionChannel(server, ConnectionChannel.DATA_PORT, user, pass);
-				video = new ConnectionChannel(server, ConnectionChannel.VIDEO_PORT, user, pass);
-				camPreview.setChannel(video);
+			public void onCameraViewStopped() {
 
-				data.setCallback(new MessageCallback() {
-					@Override
-					public void callback(final char message, final char value) {
-						Log.d("Message Callback", (int) message + ", " + (int) value);
-
-						if (camPreview != null) {
-							if (message == 30) {
-								camPreview.startCamera();
-								camHolder.addCallback(camPreview);
-							}
-							if (message == 31) {
-								camPreview.stopCamera();
-								camHolder.removeCallback(camPreview);
-							}
-						}
-
-						if (looper != null) {
-							if (message == 10)
-								looper.updateCommand(Direction.FORWARD);
-							if (message == 11)
-								looper.updateCommand(Direction.REVERSE);
-							if (message == 12)
-								looper.updateCommand(Direction.LEFT);
-							if (message == 13)
-								looper.updateCommand(Direction.RIGHT);
-							if (message == 14)
-								looper.updateCommand(Direction.STOP);
-						}
-
-						runOnUiThread(new Thread() {
-							@Override
-							public void run() {
-								txtServer.setText("MESSAGE: " + (int) message + " VALUE: " + (int) value);
-							}
-						});
-					}
-				});
 			}
-		}).start();
+
+			@Override
+			public void onCameraViewStarted(int width, int height) {
+
+			}
+
+			@Override
+			public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
+				Mat frame = inputFrame.rgba();
+				if (commVideo != null) {
+					commVideo.toSend = frame;
+				} else {
+					Log.d("COMM_VIDEO", "NULL BU AMCA");
+				}
+				return frame;
+			}
+		});
 
 	}
 
 	public void btnLogoutClicked(View w) {
+		// TODO: Also stop the async tasks & camera gracefully.
+		if (commData != null) {
+			commData.cancel(true);
+			Log.d("CANCELED", commData.isCancelled() ? "true" : "false");
+		}
 		this.finish();
-		Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
-		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-		startActivity(intent);
+	}
+
+	public void sendTestMsg(View w){
+		commData.send("Hello: " + (new Date()).toString());
+
+	}
+	
+	@Override
+	public void callback(Command c) {
+		TextView info = (TextView) findViewById(R.id.informationText);
+		info.setText(c.getValue());
 	}
 }

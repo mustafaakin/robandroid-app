@@ -1,27 +1,22 @@
 package inviso.app;
+
+
 import android.util.Log;
-import inviso.app.NetworkHandler.ConnectionChannel;
-import ioio.lib.api.AnalogInput;
 import ioio.lib.api.DigitalOutput;
 import ioio.lib.api.PwmOutput;
 import ioio.lib.api.DigitalOutput.Spec.Mode;
 import ioio.lib.api.exception.ConnectionLostException;
 import ioio.lib.util.BaseIOIOLooper;
 
-public class MyLooper extends BaseIOIOLooper {
+public class MyIOIOLooper extends BaseIOIOLooper {
 	// Motors
 	private PwmOutput motor1Speed;
 	private PwmOutput motor2Speed;
 	private DigitalOutput motor1Direction;
 	private DigitalOutput motor2Direction;
-	
-	// Sensor
-	// private AnalogInput analog;
-	
+
 	private volatile long lastCommandTime = 0;
 	private volatile Direction direction;
-	
-	private ConnectionChannel dataSend;
 	
 	enum Direction {
 		FORWARD, REVERSE, STOP, LEFT, RIGHT
@@ -32,7 +27,7 @@ public class MyLooper extends BaseIOIOLooper {
 		this.direction = direction;
 	}
 
-	public MyLooper() {
+	public MyIOIOLooper() {
 
 	}
 
@@ -107,5 +102,5 @@ public class MyLooper extends BaseIOIOLooper {
 		} catch (InterruptedException ie) {
 			Log.d("Interrupted Exception", ie.getMessage());
 		}
-	}
+	}	
 }
