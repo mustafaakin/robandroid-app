@@ -12,6 +12,7 @@ public class DataCommunicator extends AsyncTask<Void, Command, Void> {
 	private Sender runnSender;
 	
 	public void send(String msg){
+		while(runnSender == null); // easy locks
 		runnSender.send(msg);
 	}
 	

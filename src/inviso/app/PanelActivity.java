@@ -48,11 +48,12 @@ public class PanelActivity extends IOIOActivity implements CommandCallback {
 				final String pass = intent.getStringExtra("pass");
 				
 				// Setup the Tasks
-				commVideo = new VideoCommunicator(host, user, pass, 5000);
+				//commVideo = new VideoCommunicator(host, user, pass, 5000);
 				
-				commVideo.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
-				
+				//commVideo.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+				matrix = new Matrix(null);
+				matrix.upd8 = (TextView) findViewById(R.id.informationText);
+				matrix.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 			} else {
 				super.onManagerConnected(status);
 			}
@@ -66,9 +67,11 @@ public class PanelActivity extends IOIOActivity implements CommandCallback {
 			matrix.cancel(true);
 		}
 		if ( isAutonomous){
-			matrix = new Matrix(looper);
+			// matrix = new Matrix(looper);
+		} 
+		if ( commData != null){
+			looper.setDataComm(commData);
 		}
-		// TODO: Also notify the Data Transmission tasks.
 		return looper;
 	}
 
@@ -109,7 +112,10 @@ public class PanelActivity extends IOIOActivity implements CommandCallback {
 				if (commVideo != null) {
 					commVideo.toSend = frame;
 				} else {
-					Log.d("COMM_VIDEO", "NULL BU AMCA");
+					// Log.d("COMM_VIDEO", "NULL BU AMCA");
+				}
+				if ( matrix!= null){
+					matrix.supplyImage(frame); 
 				}
 				return frame;
 			}

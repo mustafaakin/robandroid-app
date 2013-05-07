@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public class Command {
 	public enum CommandType {
-		FORWARD, REVERSE, LEFT, RIGHT, SERVO_UP, SERVO_DOWN, CAMERA_STOP, CAMERA_START, AUTONOMOUS_STOP, AUTONOMOUS_START, UNKNOWN
+		FORWARD, REVERSE, LEFT, RIGHT, STOP, SERVO_UP, SERVO_DOWN, CAMERA_STOP, CAMERA_START, AUTONOMOUS_STOP, AUTONOMOUS_START, UNKNOWN
 	}
 
 	CommandType type;
@@ -21,6 +21,7 @@ public class Command {
 		map.put("REVERSE", CommandType.REVERSE);
 		map.put("LEFT", CommandType.LEFT);
 		map.put("RIGHT", CommandType.RIGHT);
+		map.put("STOP", CommandType.STOP);
 		map.put("SERVO_UP", CommandType.SERVO_UP);
 		map.put("SERVO_DOWN", CommandType.SERVO_DOWN);
 		map.put("CAMERA_STOP", CommandType.CAMERA_STOP);

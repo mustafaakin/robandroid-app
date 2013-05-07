@@ -3,13 +3,13 @@ package inviso.app.image;
 import android.graphics.Bitmap;
 
 public class SceneDetectData {
-	int original_key1;
-	int original_key2;	
-	int original_matches;
-	int dist_matches;
-	int homo_matches;
-	long elapsed;
-	int idx;
+	public int original_key1;
+	public int original_key2;	
+	public int original_matches;
+	public int dist_matches;
+	public int homo_matches;
+	public long elapsed;
+	public int idx;
 	
 	Bitmap bmp;
 	
